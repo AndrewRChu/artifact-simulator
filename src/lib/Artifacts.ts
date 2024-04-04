@@ -236,18 +236,18 @@ export class Goblet extends ArtifactPiece {
 	constructor() {
 		super();
 		this.mainStat = weightedRandom([
-			[STAT.HP_, 0],
-			[STAT.ATK_, 0],
-			[STAT.DEF_, 0],
-			[STAT.Pyro_, 0],
-			[STAT.Electro_, 0],
-			[STAT.Cryo_, 0],
-			[STAT.Hydro_, 0],
-			[STAT.Dendro_, 0],
-			[STAT.Anemo_, 0],
-			[STAT.Geo_, 0],
-			[STAT.Physical_, 0],
-			[STAT.Physical_, 0]
+			[STAT.HP_, 77],
+			[STAT.ATK_, 77],
+			[STAT.DEF_, 76],
+			[STAT.Pyro_, 20],
+			[STAT.Electro_, 20],
+			[STAT.Cryo_, 20],
+			[STAT.Hydro_, 20],
+			[STAT.Dendro_, 20],
+			[STAT.Anemo_, 20],
+			[STAT.Geo_, 20],
+			[STAT.Physical_, 20],
+			[STAT.EM, 10]
 		])[0];
 	}
 }
@@ -256,17 +256,66 @@ export class Circlet extends ArtifactPiece {
 	constructor() {
 		super();
 		this.mainStat = weightedRandom([
-			[STAT.HP_, 0],
-			[STAT.ATK_, 0],
-			[STAT.DEF_, 0],
-			[STAT.CR_, 0],
-			[STAT.CD_, 0],
-			[STAT.Healing_, 0],
-			[STAT.EM, 0]
+			[STAT.HP_, 11],
+			[STAT.ATK_, 11],
+			[STAT.DEF_, 11],
+			[STAT.CR_, 5],
+			[STAT.CD_, 5],
+			[STAT.Healing_, 5],
+			[STAT.EM, 2]
 		])[0];
 	}
 }
 
 export class ArtifactSimulation {
-	artifacts: ArtifactPiece[] = [];
+	artifacts: number;
+	epochs: number;
+
+	constructor(artifacts: number = 10000, epochs: number = 100) {
+		this.artifacts = artifacts;
+		this.epochs = epochs;
+	}
+
+	generateArtifacts(n: number) {
+		const critValueOverTime = [];
+		const bestPieces = [0, 0, 0, 0, 0];
+
+		let artifacts: ArtifactPiece[] = [];
+		for (let i = 0; i < n; i++) {
+			const piece = weightedRandom([
+				[Flower, 1],
+				[Feather, 1],
+				[Sands, 1],
+				[Goblet, 1],
+				[Circlet, 1]
+			]);
+			const artifact = new piece[0]();
+			artifact.levelUp(20);
+			bestPieces[piece[1]] = Math.max(artifact.critValue(), bestPieces[piece[1]]);
+
+			// if (i % 10 == 0) {
+			critValueOverTime.push(bestPieces.reduce((acc, x) => x + acc, 0));
+			// }
+		}
+
+		return critValueOverTime;
+	}
+
+	run() {
+		const critValuesOverTime = [];
+		for (let epoch = 0; epoch < this.epochs; epoch++) {
+			critValuesOverTime.push(this.generateArtifacts(this.artifacts));
+		}
+
+		const averageCritValueOverTime = [];
+		for (let n = 0; n < this.artifacts; n++) {
+			let sum = 0;
+			for (let epoch = 0; epoch < this.epochs; epoch++) {
+				sum += critValuesOverTime[epoch][n];
+			}
+			averageCritValueOverTime.push(sum / this.epochs);
+		}
+
+		return averageCritValueOverTime;
+	}
 }

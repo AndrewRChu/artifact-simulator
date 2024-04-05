@@ -270,10 +270,12 @@ export class Circlet extends ArtifactPiece {
 export class ArtifactSimulation {
 	artifacts: number;
 	epochs: number;
+	desirableSets: number;
 
-	constructor(artifacts: number = 10000, epochs: number = 100) {
+	constructor(artifacts: number = 10000, epochs: number = 100, desirableSets: number = 1) {
 		this.artifacts = artifacts;
 		this.epochs = epochs;
+		this.desirableSets = desirableSets;
 	}
 
 	generateArtifacts(n: number) {
@@ -282,20 +284,20 @@ export class ArtifactSimulation {
 
 		let artifacts: ArtifactPiece[] = [];
 		for (let i = 0; i < n; i++) {
-			const piece = weightedRandom([
-				[Flower, 1],
-				[Feather, 1],
-				[Sands, 1],
-				[Goblet, 1],
-				[Circlet, 1]
-			]);
-			const artifact = new piece[0]();
-			artifact.levelUp(20);
-			bestPieces[piece[1]] = Math.max(artifact.critValue(), bestPieces[piece[1]]);
+			if (Math.random() < this.desirableSets / 2) {
+				const piece = weightedRandom([
+					[Flower, 1],
+					[Feather, 1],
+					[Sands, 1],
+					[Goblet, 1],
+					[Circlet, 1]
+				]);
+				const artifact = new piece[0]();
+				artifact.levelUp(20);
+				bestPieces[piece[1]] = Math.max(artifact.critValue(), bestPieces[piece[1]]);
+			}
 
-			// if (i % 10 == 0) {
 			critValueOverTime.push(bestPieces.reduce((acc, x) => x + acc, 0));
-			// }
 		}
 
 		return critValueOverTime;
